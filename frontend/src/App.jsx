@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Trie from "./utils/Trie";
-import skills from "./utils/skills";
+import { skills } from "./utils/skills";
 import SearchBar from "./components/SearchBar";
 import Results from "./components/Results";
 import { fetchMatchedJobs } from "./services/api";

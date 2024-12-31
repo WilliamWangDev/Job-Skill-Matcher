@@ -1,3 +1,4 @@
+// List of known skills
 const skills = [
   "JavaScript",
   "Java",
@@ -11,4 +12,11 @@ const skills = [
   "Redux",
 ];
 
-export default skills;
+// Mapping of abbreviations to full skill names
+const abbreviations = {
+  JS: "JavaScript",
+  TS: "TypeScript",
+  SQL: "SQL",
+};
+
+export { skills, abbreviations }; // Named exports
