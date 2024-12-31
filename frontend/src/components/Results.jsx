@@ -16,6 +16,16 @@ function Results({ results }) {
               Relevance: <span className="font-semibold">{result.relevance}%</span>
             </p>
             <p className="mt-2 text-gray-700">{result.comment}</p>
+            {result.suggestions && result.suggestions.length > 0 && (
+              <div className="mt-2">
+                <h4 className="text-sm font-semibold text-gray-800">Suggestions:</h4>
+                <ul className="list-disc list-inside text-sm text-gray-700">
+                  {result.suggestions.map((suggestion, idx) => (
+                    <li key={idx}>{suggestion}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </li>
         ))}
       </ul>
