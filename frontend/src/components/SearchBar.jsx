@@ -8,12 +8,14 @@ function SearchBar({ trie, onSkillSelect }) {
   const [fuse, setFuse] = useState(null);
 
   useEffect(() => {
-    const skills = trie ? trie.search("") : []; // Get all skills from Trie
-    const fuseInstance = new Fuse(skills, {
-      includeScore: true,
-      threshold: 0.3, // Adjust threshold for fuzzy matching
-    });
-    setFuse(fuseInstance);
+    if (trie) {
+      const skills = trie.search(""); // Get all skills from the Trie
+      const fuseInstance = new Fuse(skills, {
+        includeScore: true,
+        threshold: 0.3, // Adjust for fuzzy matching leniency
+      });
+      setFuse(fuseInstance);
+    }
   }, [trie]);
 
   const handleChange = (e) => {
@@ -25,19 +27,19 @@ function SearchBar({ trie, onSkillSelect }) {
       return;
     }
 
-    // Check for abbreviation match
+    // Check for abbreviation matches
     const abbrevMatch = abbreviations[value.toUpperCase()];
     const abbrevSuggestions = abbrevMatch ? [abbrevMatch] : [];
 
-    // Trie-based suggestions
+    // Get Trie-based suggestions
     const trieSuggestions = trie ? trie.search(value.trim()) : [];
 
-    // Fuse-based fuzzy matching
+    // Get Fuse.js fuzzy suggestions
     const fuseSuggestions = fuse
       ? fuse.search(value.trim()).map((result) => result.item)
       : [];
 
-    // Combine and remove duplicates
+    // Merge and remove duplicates
     const mergedSuggestions = Array.from(
       new Set([...abbrevSuggestions, ...trieSuggestions, ...fuseSuggestions])
     );
@@ -46,8 +48,8 @@ function SearchBar({ trie, onSkillSelect }) {
   };
 
   const handleSuggestionClick = (suggestion) => {
-    onSkillSelect(suggestion); // Add selected skill
-    setInput(""); // Clear input after selection
+    onSkillSelect(suggestion); // Pass the selected skill back to the parent
+    setInput(""); // Clear the input field
     setSuggestions([]); // Clear suggestions
   };
 
@@ -58,15 +60,15 @@ function SearchBar({ trie, onSkillSelect }) {
         placeholder="Enter a skill or abbreviation (e.g., JS, Python)"
         value={input}
         onChange={handleChange}
-        className="w-full p-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+        className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
       {suggestions.length > 0 && (
-        <ul className="border rounded-lg mt-2 p-2 bg-white shadow-md">
+        <ul className="border border-gray-200 rounded-lg mt-2 bg-white shadow-lg">
           {suggestions.map((suggestion, idx) => (
             <li
               key={idx}
               onClick={() => handleSuggestionClick(suggestion)}
-              className="p-1 hover:bg-gray-200 cursor-pointer"
+              className="p-2 hover:bg-gray-100 cursor-pointer"
             >
               {suggestion}
             </li>
