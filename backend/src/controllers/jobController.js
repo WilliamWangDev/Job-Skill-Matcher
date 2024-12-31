@@ -15,54 +15,43 @@ const getJobs = async (req, res) => {
 
 // Fuzzy match jobs based on user input
 const matchJobs = async (req, res) => {
-  const { skills } = req.body; // Expecting skills as a comma-separated string
+  const { skills } = req.body; // Expecting a comma-separated string of skills
   if (!skills) {
     return res.status(400).json({ message: "Skills are required." });
   }
 
   try {
-    // Fetch all jobs from the database
+    const userSkills = skills
+      .split(",")
+      .map((skill) => skill.trim().toLowerCase()); // Normalize input
     const jobs = await Job.find();
 
-    // Initialize Fuse.js
-    const fuse = new Fuse(jobs, {
-      keys: ["requiredSkills"], // Match against the requiredSkills field
-      threshold: 0.3, // Adjust threshold for leniency
+    const results = jobs.map((job) => {
+      const matchedSkills = userSkills.filter((userSkill) =>
+        job.requiredSkills.some(
+          (requiredSkill) => requiredSkill.toLowerCase() === userSkill // Normalize required skills
+        )
+      );
+
+      const relevance =
+        (matchedSkills.length / job.requiredSkills.length) * 100;
+
+      return {
+        title: job.title,
+        relevance: relevance.toFixed(2), // Keep relevance as a percentage string
+        comment: matchedSkills.length
+          ? `Your skills in ${matchedSkills.join(", ")} align with this role.`
+          : null,
+        suggestions: job.suggestedSkills,
+      };
     });
 
-    // Split user input into individual skills
-    const userSkills = skills.split(",").map((skill) => skill.trim());
-
-    // Perform matching
-    const results = jobs
-      .map((job) => {
-        // Match userSkills to requiredSkills of this job
-        const matchedSkills = userSkills.filter((userSkill) =>
-          job.requiredSkills.some(
-            (requiredSkill) =>
-              requiredSkill.toLowerCase().includes(userSkill.toLowerCase()) // Case-insensitive match
-          )
-        );
-
-        // Calculate relevance as a percentage
-        const relevance =
-          (matchedSkills.length / job.requiredSkills.length) * 100;
-
-        return {
-          title: job.title,
-          relevance: relevance.toFixed(2), // Round relevance to two decimals
-          comment: matchedSkills.length
-            ? `Your skills in ${matchedSkills.join(", ")} align with this role.`
-            : null, // No comment if no skills match
-          suggestions: job.suggestedSkills,
-        };
-      })
-      .filter((job) => job.relevance > 0); // Exclude jobs with relevance === 0
-
-    // Sort results by relevance
+    // Sort results by relevance in descending order
     results.sort((a, b) => b.relevance - a.relevance);
 
-    res.status(200).json(results);
+    // console.log("Sorted Results:", results); // Debugging line to verify sorted results
+
+    res.status(200).json(results.filter((job) => job.relevance > 0)); // Only send jobs with > 0 relevance
   } catch (error) {
     res
       .status(500)
