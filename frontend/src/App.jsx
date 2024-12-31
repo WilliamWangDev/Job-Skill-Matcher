@@ -4,6 +4,7 @@ import { skills } from "./utils/skills";
 import SearchBar from "./components/SearchBar";
 import Results from "./components/Results";
 import { fetchMatchedJobs } from "./services/api";
+import axios from "axios";
 
 function App() {
   // We place the handleSearch function here instead of inside of the SearchBar component because
@@ -16,13 +17,26 @@ function App() {
   const [results, setResults] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [error, setError] = useState("");
-  const [searchPerformed, setSearchPerformed] = useState(false); // Track if a search was performed
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
-  // Initialize the Trie on component mount
+  // Fetch skills from the backend and initialize the Trie
   useEffect(() => {
-    const trieInstance = new Trie();
-    skills.forEach((skill) => trieInstance.insert(skill));
-    setTrie(trieInstance);
+    const fetchSkills = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/jobs/skills"
+        );
+        const fetchedSkills = response.data;
+
+        const trieInstance = new Trie();
+        fetchedSkills.forEach((skill) => trieInstance.insert(skill));
+        setTrie(trieInstance);
+      } catch (err) {
+        console.error("Failed to fetch skills:", err);
+      }
+    };
+
+    fetchSkills();
   }, []);
 
   const handleSkillSelect = (skill) => {
@@ -56,34 +70,29 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold text-blue-600">Job Skill Matcher</h1>
-      <p className="mt-2 text-gray-700">
+      <p className="mt-2 mb-2 text-gray-700">
         Find the perfect job for your skills!
       </p>
       <SearchBar trie={trie} onSkillSelect={handleSkillSelect} />
       <div className="mt-4 w-full max-w-md">
         {selectedSkills.length > 0 && (
-          <div className="mt-4 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-700">
-              Selected Skills:
-            </h2>
-            <ul className="mt-2 flex flex-wrap">
-              {selectedSkills.map((skill, idx) => (
-                <li
-                  key={idx}
-                  className="relative bg-blue-100 text-blue-600 px-4 py-2 rounded-full m-1 flex items-center shadow-sm"
+          <ul className="mt-2 flex flex-wrap">
+            {selectedSkills.map((skill, idx) => (
+              <li
+                key={idx}
+                className="relative bg-blue-100 text-blue-600 px-4 py-2 rounded-full m-1 flex items-center shadow-sm"
+              >
+                {skill}
+                <button
+                  onClick={() => handleRemoveSkill(skill)}
+                  className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs hover:bg-red-600"
+                  aria-label="Remove skill"
                 >
-                  {skill}
-                  <button
-                    onClick={() => handleRemoveSkill(skill)}
-                    className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs hover:bg-red-600"
-                    aria-label="Remove skill"
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
         )}
         <div className="mt-4 flex space-x-2">
           <button
