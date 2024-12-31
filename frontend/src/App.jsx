@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import SearchBar from "./components/SearchBar";
 import Results from "./components/Results";
+import { fetchMatchedJobs } from "./services/api";
 
 function App() {
   // We place the handleSearch function here instead of inside of the SearchBar component because
@@ -10,39 +11,24 @@ function App() {
   // const handleSearch = (input) => {
   // console.log("User input:", input); // This will display the user input in the console for now as we haven't implemented the API request yet
   const [results, setResults] = useState([]);
+  const [error, setError] = useState("");
 
-  const handleSearch = (input) => {
-    // Simulate job matching for now (replace with backend logic later)
-    const mockResults = [
-      {
-        title: "Frontend Developer",
-        relevance: 90,
-        comment:
-          "Your skills in JavaScript and interest in web development match this role. Learn React to improve your suitability.",
-      },
-      {
-        title: "Full Stack Developer",
-        relevance: 75,
-        comment:
-          "With additional backend knowledge, you might qualify for this role.",
-      },
-      {
-        title: "Data Analyst",
-        relevance: 60,
-        comment:
-          "Your SQL skills partially align with this role. Excel and Python would strengthen your profile.",
-      },
-    ];
-    setResults(mockResults);
+  const handleSearch = async (input) => {
+    try {
+      setError(""); // Clear previous errors
+      const data = await fetchMatchedJobs(input);
+      setResults(data); // Update results with data from the backend
+    } catch (err) {
+      setError("Failed to fetch matched jobs. Please try again.");
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
       <h1 className="text-3xl font-bold text-blue-600">Job Skill Matcher</h1>
-      <p className="mt-2 text-gray-700">
-        Find the perfect job for your skills!
-      </p>
+      <p className="mt-2 text-gray-700">Find the perfect job for your skills!</p>
       <SearchBar onSearch={handleSearch} />
+      {error && <p className="text-red-500 mt-4">{error}</p>}
       <Results results={results} />
     </div>
   );
