@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Trie from "./utils/Trie";
-import { skills } from "./utils/skills";
 import SearchBar from "./components/SearchBar";
 import Results from "./components/Results";
 import { fetchMatchedJobs } from "./services/api";
 import axios from "axios";
+import jobsData from "./data/jobs.json"; // Import local jobs JSON
 
 function App() {
   // We place the handleSearch function here instead of inside of the SearchBar component because
@@ -17,27 +17,71 @@ function App() {
   const [results, setResults] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [error, setError] = useState("");
+  const [useBackend, setUseBackend] = useState(false); // Dynamic mode switching
   const [searchPerformed, setSearchPerformed] = useState(false);
-
-  // Fetch skills from the backend and initialize the Trie
+  console.log("Imported jobs data:", jobsData);
   useEffect(() => {
-    const fetchSkills = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:5000/api/jobs/skills"
-        );
-        const fetchedSkills = response.data;
+    const initializeApp = async () => {
+      let backendAvailable = false; // Local variable to manage backend availability
 
-        const trieInstance = new Trie();
-        fetchedSkills.forEach((skill) => trieInstance.insert(skill));
-        setTrie(trieInstance);
-      } catch (err) {
-        console.error("Failed to fetch skills:", err);
+      try {
+        // Check if the backend is running
+        const response = await axios.get("http://localhost:5000/api/health");
+        if (response.status === 200) {
+          console.log("Using backend");
+          backendAvailable = true;
+          setUseBackend(true); // Use backend mode
+        } else {
+          console.log("Unexpected response from backend");
+          setUseBackend(false); // Fallback to local JSON
+        }
+      } catch (error) {
+        // Handle backend unavailability gracefully
+        if (error.code === "ERR_NETWORK") {
+          console.warn("Backend is not reachable. Falling back to local JSON.");
+        } else {
+          console.error("An unexpected error occurred:", error);
+        }
+        backendAvailable = false;
+        setUseBackend(false); // Fallback to local JSON
       }
+
+      // Load job data
+      const fetchData = async () => {
+        try {
+          if (backendAvailable) {
+            console.log("Fetching skills from backend...");
+            const response = await axios.get(
+              "http://localhost:5000/api/jobs/skills"
+            );
+            return response.data;
+          } else {
+            console.log("Using local JSON for skills...");
+            const skills = new Set();
+            jobsData.forEach((job) => {
+              job.requiredSkills.forEach((skill) => skills.add(skill));
+              job.suggestedSkills.forEach((skill) => skills.add(skill));
+            });
+            const skillsArray = [...skills];
+            console.log("Local skills:", skillsArray);
+            return skillsArray;
+          }
+        } catch (err) {
+          console.error("Failed to load skills:", err);
+          return [];
+        }
+      };
+
+      const skills = await fetchData();
+
+      // Initialize the Trie
+      const trieInstance = new Trie();
+      skills.forEach((skill) => trieInstance.insert(skill));
+      setTrie(trieInstance);
     };
 
-    fetchSkills();
-  }, []);
+    initializeApp();
+  }, []); // Keep dependency array constant
 
   const handleSkillSelect = (skill) => {
     if (!selectedSkills.includes(skill)) {
@@ -52,10 +96,49 @@ function App() {
   const handleSearch = async () => {
     try {
       setError("");
-      setSearchPerformed(true); // Mark search as performed
-      const data = await fetchMatchedJobs(selectedSkills.join(", "));
-      setResults(data);
+      setSearchPerformed(true);
+
+      let resultsData;
+
+      if (useBackend) {
+        console.log("Fetching data from backend...");
+        const response = await axios.post(
+          "http://localhost:5000/api/jobs/match",
+          {
+            skills: selectedSkills.join(","),
+          }
+        );
+        resultsData = response.data;
+      } else {
+        console.log("Using local JSON for search...");
+        resultsData = jobsData.map((job) => {
+          const matchedSkills = selectedSkills.filter((skill) =>
+            job.requiredSkills
+              .map((rs) => rs.toLowerCase())
+              .includes(skill.toLowerCase())
+          );
+          const relevance =
+            (matchedSkills.length / job.requiredSkills.length) * 100;
+
+          return {
+            title: job.title,
+            relevance: relevance.toFixed(2),
+            comment: matchedSkills.length
+              ? `Your skills in ${matchedSkills.join(
+                  ", "
+                )} align with this role.`
+              : null,
+            suggestions: job.suggestedSkills,
+          };
+        });
+
+        resultsData = resultsData.filter((job) => job.relevance > 0);
+        resultsData.sort((a, b) => b.relevance - a.relevance);
+      }
+
+      setResults(resultsData);
     } catch (err) {
+      console.error("Search error:", err);
       setError("Failed to fetch matched jobs. Please try again.");
     }
   };
@@ -64,23 +147,23 @@ function App() {
     setSelectedSkills([]);
     setResults([]);
     setError("");
-    setSearchPerformed(false); // Reset search state
+    setSearchPerformed(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h1 className="text-3xl font-bold text-blue-600">Job Skill Matcher</h1>
-      <p className="mt-2 mb-2 text-gray-700">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-12">
+      <h1 className="text-3xl font-bold text-blue-800">Job Skill Matcher</h1>
+      <p className="my-2 text-gray-700">
         Find the perfect job for your skills!
       </p>
       <SearchBar trie={trie} onSkillSelect={handleSkillSelect} />
-      <div className="mt-4 w-full max-w-md">
+      <div className="mt-2 w-full max-w-md">
         {selectedSkills.length > 0 && (
           <ul className="mt-2 flex flex-wrap">
             {selectedSkills.map((skill, idx) => (
               <li
                 key={idx}
-                className="relative bg-blue-100 text-blue-600 px-4 py-2 rounded-full m-1 flex items-center shadow-sm"
+                className="relative bg-blue-100 text-blue-800 px-4 py-2 rounded-full m-1 flex items-center shadow-sm"
               >
                 {skill}
                 <button

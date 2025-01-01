@@ -63,7 +63,7 @@ function SearchBar({ trie, onSkillSelect }) {
         className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
       />
       {suggestions.length > 0 && (
-        <ul className="border border-gray-200 rounded-lg mt-2 bg-white shadow-lg">
+        <ul className="border border-gray-200 rounded-lg bg-white shadow-lg absolute mt-2 overflow-auto max-h-60 w-full max-w-md z-20">
           {suggestions.map((suggestion, idx) => (
             <li
               key={idx}
