@@ -2,6 +2,12 @@
 
 This is a web app that allows the user to search for skills and match them with job titles, also providing targeted suggestions to further enhance career opportunities.
 
+# Live Demo
+https://job-skill-matcher.vercel.app/
+Note that this demo app does not have a real backend and uses a mock API.
+To run the app with a real backend locally, follow the instructions below.
+
+
 # File Structure
 
 ```
