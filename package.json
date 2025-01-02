@@ -1,5 +1,12 @@
 {
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "start:all": "concurrently \"npm run start --prefix frontend\" \"node backend/src/server.js\""
+  },
   "dependencies": {
     "fuse.js": "^7.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
