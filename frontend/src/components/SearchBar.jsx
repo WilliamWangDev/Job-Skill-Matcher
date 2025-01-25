@@ -60,7 +60,7 @@ function SearchBar({ trie, onSkillSelect }) {
         placeholder="Enter a skill or abbreviation (e.g., JS, Python)"
         value={input}
         onChange={handleChange}
-        className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
       />
       {suggestions.length > 0 && (
         <ul className="border border-gray-200 rounded-lg bg-white shadow-lg absolute mt-2 overflow-auto max-h-60 w-full max-w-md z-20">

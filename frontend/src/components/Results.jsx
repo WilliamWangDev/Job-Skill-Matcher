@@ -22,7 +22,7 @@ function Results({ results, searchPerformed }) {
             <h3 className="text-lg font-bold text-gray-800">{result.title}</h3>
             <p className="text-sm text-gray-600">
               Relevance:{" "}
-              <span className="font-semibold text-blue-600">
+              <span className="font-semibold text-blue-700">
                 {result.relevance}%
               </span>
             </p>
@@ -30,9 +30,9 @@ function Results({ results, searchPerformed }) {
             {result.suggestions && result.suggestions.length > 0 && (
               <div className="mt-3">
                 <h4 className="text-sm font-semibold text-gray-800">
-                  Suggestions:
+                  Skill suggestions:
                 </h4>
-                <ul className="list-disc list-inside text-sm text-gray-700 mt-1">
+                <ul className="px-2 list-disc list-inside text-sm text-gray-700 mt-1">
                   {result.suggestions.map((suggestion, idx) => (
                     <li key={idx}>{suggestion}</li>
                   ))}
