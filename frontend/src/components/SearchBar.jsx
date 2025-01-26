@@ -54,7 +54,7 @@ function SearchBar({ trie, onSkillSelect }) {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full">
       <input
         type="text"
         placeholder="Enter a skill or abbreviation (e.g., JS, Python)"
@@ -68,7 +68,7 @@ function SearchBar({ trie, onSkillSelect }) {
             <li
               key={idx}
               onClick={() => handleSuggestionClick(suggestion)}
-              className="p-2 hover:bg-gray-100 cursor-pointer"
+              className="p-3 hover:bg-gray-100 cursor-pointer uppercase"
             >
               {suggestion}
             </li>

@@ -27,11 +27,13 @@ const matchJobs = async (req, res) => {
     const jobs = await Job.find();
 
     const results = jobs.map((job) => {
-      const matchedSkills = userSkills.filter((userSkill) =>
-        job.requiredSkills.some(
-          (requiredSkill) => requiredSkill.toLowerCase() === userSkill // Normalize required skills
+      const matchedSkills = userSkills
+        .filter((userSkill) =>
+          job.requiredSkills.some(
+            (requiredSkill) => requiredSkill.toLowerCase() === userSkill // Normalize required skills
+          )
         )
-      );
+        .map((s) => s.toUpperCase()); // Capitalize matched skills
 
       const relevance =
         (matchedSkills.length / job.requiredSkills.length) * 100;
@@ -40,7 +42,9 @@ const matchJobs = async (req, res) => {
         title: job.title,
         relevance: relevance.toFixed(2), // Keep relevance as a percentage string
         comment: matchedSkills.length
-          ? `Your skill in <b>${matchedSkills.join(", ")}</b> align with this role.`
+          ? `Your skills in <b>${matchedSkills.join(
+              ", "
+            )}</b> align with this role.`
           : null,
         suggestions: job.suggestedSkills,
       };

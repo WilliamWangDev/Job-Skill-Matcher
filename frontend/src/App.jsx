@@ -6,6 +6,8 @@ import Footer from "./components/Footer";
 import { fetchMatchedJobs } from "./services/api";
 import axios from "axios";
 import jobsData from "./data/jobs.json"; // Import local jobs JSON
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { Tooltip } from "react-tooltip";
 
 function App() {
   // We place the handleSearch function here instead of inside of the SearchBar component because
@@ -86,15 +88,23 @@ function App() {
 
   const handleSkillSelect = (skill) => {
     if (!selectedSkills.includes(skill)) {
-      setSelectedSkills([...selectedSkills, skill]);
+      const updatedSkills = [...selectedSkills, skill];
+      setSelectedSkills(updatedSkills);
+      handleSearch(updatedSkills);
     }
   };
 
   const handleRemoveSkill = (skill) => {
-    setSelectedSkills(selectedSkills.filter((s) => s !== skill));
+    const updatedSkills = [...selectedSkills].filter((s) => s !== skill);
+    setSelectedSkills([...updatedSkills]);
+    if (updatedSkills.length === 0) {
+      handleReset(); // Reset search if no skills are selected
+    } else {
+      handleSearch(updatedSkills); // Trigger search on skill removal
+    }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (skills) => {
     try {
       setError("");
       setSearchPerformed(true);
@@ -106,18 +116,20 @@ function App() {
         const response = await axios.post(
           "http://localhost:5000/api/jobs/match",
           {
-            skills: selectedSkills.join(","),
+            skills: skills.join(","),
           }
         );
         resultsData = response.data;
       } else {
         console.log("Using local JSON for search...");
         resultsData = jobsData.map((job) => {
-          const matchedSkills = selectedSkills.filter((skill) =>
-            job.requiredSkills
-              .map((rs) => rs.toLowerCase())
-              .includes(skill.toLowerCase())
-          );
+          const matchedSkills = skills
+            .filter((skill) =>
+              job.requiredSkills
+                .map((rs) => rs.toLowerCase())
+                .includes(skill.toLowerCase())
+            )
+            .map((s) => s.toUpperCase());
           const relevance =
             (matchedSkills.length / job.requiredSkills.length) * 100;
 
@@ -125,7 +137,7 @@ function App() {
             title: job.title,
             relevance: relevance.toFixed(2),
             comment: matchedSkills.length
-              ? `Your skill in <b>${matchedSkills.join(
+              ? `Your skills in <b>${matchedSkills.join(
                   ", "
                 )}</b> align with this role.`
               : null,
@@ -154,23 +166,39 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <main className="flex flex-col items-center justify-center p-12 flex-1 gap-1">
-        <h1 className="text-4xl font-bold text-blue-900">Job Skill Matcher</h1>
-        <p className="my-2 text-gray-700">
+        <h1 className="text-4xl font-bold text-blue-950 select-none">
+          Job Skill Matcher
+        </h1>
+        <p className="mb-4 text-gray-700 select-none">
           Find the perfect job for your skills!
         </p>
-        <SearchBar trie={trie} onSkillSelect={handleSkillSelect} />
+        <div className="flex flex-row items-center gap-2 max-w-md w-full justify-center relative">
+          <SearchBar trie={trie} onSkillSelect={handleSkillSelect} />
+          <RestartAltIcon
+            onClick={handleReset}
+            className={
+              `text-gray-500 cursor-pointer hover:text-gray-700 absolute right-[-36px]` +
+              (selectedSkills.length === 0
+                ? " pointer-events-none opacity-70"
+                : "")
+            }
+            fontSize="large"
+            data-tooltip-id="revert-tooltip"
+            data-tooltip-content="Reset"
+          ></RestartAltIcon>
+        </div>
         <div className="mt-2 w-full max-w-md">
           {selectedSkills.length > 0 && (
             <ul className="mt-2 flex flex-wrap">
               {selectedSkills.map((skill, idx) => (
                 <li
                   key={idx}
-                  className="relative bg-blue-100 text-blue-900 px-4 py-2 rounded-full m-1 flex items-center shadow-sm"
+                  className="relative bg-blue-100 text-blue-900 px-4 py-2 rounded-full m-1 flex items-center shadow-sm hover:shadow-md uppercase"
                 >
                   {skill}
                   <button
                     onClick={() => handleRemoveSkill(skill)}
-                    className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs hover:bg-red-700"
+                    className="absolute top-0 right-0 -mt-2 -mr-2 bg-gray-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-xs hover:bg-gray-700"
                     aria-label="Remove skill"
                   >
                     ✕
@@ -180,27 +208,22 @@ function App() {
             </ul>
           )}
           <div className="mt-4 flex gap-3">
-            <button
-              onClick={handleSearch}
+            {/* <button
+              onClick={() => handleSearch(selectedSkills)}
               disabled={selectedSkills.length === 0}
-              className={`p-2 rounded-lg ${
+              className={`py-2 px-4 rounded-lg font-medium ${
                 selectedSkills.length > 0
-                  ? "bg-blue-800 text-white hover:bg-blue-900"
+                  ? "bg-blue-900 text-white hover:bg-blue-950"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
               Search
-            </button>
-            <button
-              onClick={handleReset}
-              className="bg-gray-500 text-white p-2 rounded-lg hover:bg-gray-600"
-            >
-              Reset
-            </button>
+            </button> */}
           </div>
         </div>
         {error && <p className="text-red-500 mt-4">{error}</p>}
         <Results results={results} searchPerformed={searchPerformed} />
+        <Tooltip className="max-w-sm" id="revert-tooltip" />
       </main>
       <Footer />
     </div>

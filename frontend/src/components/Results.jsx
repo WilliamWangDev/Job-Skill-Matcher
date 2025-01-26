@@ -17,24 +17,26 @@ function Results({ results, searchPerformed }) {
 
   return (
     <>
-      <div className="w-full max-w-2xl mt-6">
-        <h2 className="text-xl font-semibold text-blue-800">Matched Roles</h2>
-        <ul className="mt-4 space-y-4">
+      <div className="w-full max-w-2xl mt-12">
+        <h2 className="text-xl font-semibold text-gray-800 select-none uppercase py-2">
+          Matched Roles ({results.length})
+        </h2>
+        <ul className="mt-4 space-y-6">
           {results.map((result, index) => (
             <li
               key={index}
-              className="p-4 border rounded-lg shadow-sm bg-white"
+              className="py-6 px-8 border rounded-xl shadow-sm bg-white hover:shadow-lg gap-1 flex flex-col"
             >
-              <h3 className="text-lg font-bold text-gray-800">
+              <h3 className="text-2xl font-bold text-gray-800">
                 {result.title}
               </h3>
-              <div className="text-sm text-gray-600 flex items-center flex-row gap-1 py-1">
-                <span>Relevance: </span>
-                <span className="font-semibold text-blue-700">
+              <div className="text-base text-gray-600 flex items-center flex-row gap-1 py-1">
+                <span className="font-medium">Relevance: </span>
+                <span className="font-semibold text-blue-800">
                   {result.relevance}%
                 </span>
                 <HelpOutlineIcon
-                  className="cursor-pointer opacity-80 hover:opacity-100"
+                  className="cursor-pointer opacity-80 hover:opacity-100 text-gray-600"
                   fontSize="small"
                   data-tooltip-id="relevance-tooltip"
                   data-tooltip-content="The relevance score is calculated by dividing the number of matched skills by the total number of required skills."
@@ -46,12 +48,23 @@ function Results({ results, searchPerformed }) {
               ></p>
               {result.suggestions && result.suggestions.length > 0 && (
                 <div className="mt-3">
-                  <h4 className="text-sm font-semibold text-gray-800">
-                    Skill suggestions:
+                  <h4 className="text-base font-medium text-gray-800 flex flex-row gap-1 items-center">
+                    <span>Skill suggestions:</span>
+                    <HelpOutlineIcon
+                      className="cursor-pointer opacity-80 hover:opacity-100 text-gray-600"
+                      fontSize="small"
+                      data-tooltip-id="suggestions-tooltip"
+                      data-tooltip-content="Consider learning these additional skills to improve your chances of landing this role."
+                    ></HelpOutlineIcon>
                   </h4>
-                  <ul className="px-2 list-disc list-inside text-sm text-gray-700 mt-1">
+                  <ul className="list-none list-inside text-sm text-gray-600 mt-1 uppercase flex flex-row gap-2 py-1">
                     {result.suggestions.map((suggestion, idx) => (
-                      <li key={idx}>{suggestion}</li>
+                      <li
+                        className="bg-slate-200 w-fit py-1 px-2 rounded-xl select-none hover:bg-slate-300"
+                        key={idx}
+                      >
+                        {suggestion}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -61,6 +74,7 @@ function Results({ results, searchPerformed }) {
         </ul>
       </div>
       <Tooltip className="max-w-sm" id="relevance-tooltip" />
+      <Tooltip className="max-w-sm" id="suggestions-tooltip" />
     </>
   );
 }
