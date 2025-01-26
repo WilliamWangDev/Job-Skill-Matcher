@@ -40,7 +40,7 @@ const matchJobs = async (req, res) => {
         title: job.title,
         relevance: relevance.toFixed(2), // Keep relevance as a percentage string
         comment: matchedSkills.length
-          ? `Your skills in ${matchedSkills.join(", ")} align with this role.`
+          ? `Your skill in <b>${matchedSkills.join(", ")}</b> align with this role.`
           : null,
         suggestions: job.suggestedSkills,
       };

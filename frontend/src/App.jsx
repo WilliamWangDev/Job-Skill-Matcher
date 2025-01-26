@@ -125,9 +125,9 @@ function App() {
             title: job.title,
             relevance: relevance.toFixed(2),
             comment: matchedSkills.length
-              ? `Your skills in ${matchedSkills.join(
+              ? `Your skill in <b>${matchedSkills.join(
                   ", "
-                )} align with this role.`
+                )}</b> align with this role.`
               : null,
             suggestions: job.suggestedSkills,
           };
