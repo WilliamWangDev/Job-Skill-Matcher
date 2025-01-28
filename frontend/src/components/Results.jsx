@@ -57,7 +57,7 @@ function Results({ results, searchPerformed }) {
                       data-tooltip-content="Consider learning these additional skills to improve your chances of landing this role."
                     ></HelpOutlineIcon>
                   </h4>
-                  <ul className="list-none list-inside text-sm text-gray-600 mt-1 uppercase flex flex-row gap-2 py-1">
+                  <ul className="list-none list-inside text-sm text-gray-600 mt-1 uppercase flex flex-row gap-2 py-1 flex-wrap">
                     {result.suggestions.map((suggestion, idx) => (
                       <li
                         className="bg-slate-200 w-fit py-1 px-2 rounded-xl select-none hover:bg-slate-300"

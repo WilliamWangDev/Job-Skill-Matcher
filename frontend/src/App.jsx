@@ -165,7 +165,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      <main className="flex flex-col items-center justify-center p-12 flex-1 gap-1">
+      <main className="flex flex-col md:items-center justify-center p-12 flex-1 gap-1">
         <h1 className="text-4xl font-bold text-blue-950 select-none">
           Job Skill Matcher
         </h1>
@@ -177,7 +177,7 @@ function App() {
           <RestartAltIcon
             onClick={handleReset}
             className={
-              `text-gray-500 cursor-pointer hover:text-gray-700 absolute right-[-36px]` +
+              `text-gray-500 cursor-pointer hover:text-gray-700 absolute right-[-40px]` +
               (selectedSkills.length === 0
                 ? " pointer-events-none opacity-70"
                 : "")
